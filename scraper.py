@@ -1,3 +1,4 @@
+
 import os
 import time
 from bs4 import BeautifulSoup
@@ -9,6 +10,27 @@ def save_debug_html(shop_name, html):
     with open(f"debug_html/{shop_name}.html", "w", encoding="utf-8") as f:
         f.write(html)
     print(f"💾 Salvato debug_html/{shop_name}.html ({len(html)} caratteri)")
+
+
+def accept_cookies(page):
+    selectors = [
+        'button:has-text("Accetta")',
+        'button:has-text("Accetto")',
+        'button:has-text("Accept")',
+        '#onetrust-accept-btn-handler',
+        '.cookie-accept',
+        '[data-testid="accept-cookies"]',
+    ]
+    for selector in selectors:
+        try:
+            if page.locator(selector).count() > 0:
+                page.locator(selector).first.click(timeout=3000)
+                print(f"✅ Cookie banner chiuso con selettore: {selector}")
+                return True
+        except Exception:
+            continue
+    print("⚠️ Nessun banner cookie trovato (o già assente).")
+    return False
 
 
 def get_html_with_playwright(url):
@@ -23,7 +45,16 @@ def get_html_with_playwright(url):
             page = context.new_page()
             print(f"Navigazione verso: {url}")
             page.goto(url, timeout=40000, wait_until="networkidle")
-            time.sleep(3)
+
+            accept_cookies(page)
+            time.sleep(1)
+
+            # Scroll per attivare eventuale contenuto lazy-load
+            page.mouse.wheel(0, 3000)
+            time.sleep(2)
+            page.mouse.wheel(0, 3000)
+            time.sleep(2)
+
             html_content = page.content()
             browser.close()
     except Exception as e:
@@ -42,24 +73,32 @@ def fix_link(link, base_url):
 def scrape_tannico():
     wines = []
     base_url = "https://www.tannico.it"
-    html = get_html_with_playwright(f"{base_url}/sconti.html")
+    # URL corretto: /sconti.html non esiste come pagina prodotto, la vera
+    # pagina promo è sotto /collections/
+    html = get_html_with_playwright(f"{base_url}/collections/tutte-le-promo")
     if html:
         soup = BeautifulSoup(html, 'html.parser')
-        cards = soup.select('.product-item') or soup.select('[data-product-id]') or soup.select('.card')
+        # Selettori tema Shopify Dawn (il più comune) + fallback generici
+        cards = (
+            soup.select('.card-wrapper')
+            or soup.select('.card')
+            or soup.select('.product-item')
+            or soup.select('[data-product-id]')
+        )
         print(f"🔎 Tannico: trovate {len(cards)} schede prodotto.")
 
         if len(cards) == 0:
             save_debug_html("tannico", html)
 
         for card in cards:
-            title_el = card.select_one('.product-item-name, .product-name, a.product-item-link, .title, h3, h2')
-            price_el = card.select_one('.price, .special-price, .price-final_price, .final-price')
+            title_el = card.select_one('.card__heading, .product-item-name, .product-name, a.product-item-link, .title, h3, h2')
+            price_el = card.select_one('.price-item, .price, .special-price, .price-final_price, .final-price')
             link_el = card.select_one('a')
 
             if title_el and price_el:
                 title = title_el.get_text(strip=True)
                 price = price_el.get_text(strip=True)
-                raw_link = link_el['href'] if link_el and 'href' in link_el.attrs else "/sconti.html"
+                raw_link = link_el['href'] if link_el and 'href' in link_el.attrs else "/collections/tutte-le-promo"
                 wines.append({
                     'title': title,
                     'price': price,
@@ -75,6 +114,8 @@ def scrape_tannico():
 def scrape_vinatis():
     wines = []
     base_url = "https://www.vinatis.it"
+    # NOTA: URL non ancora verificato come per Tannico — se anche qui
+    # risultano 0 card, controllare l'URL reale della pagina promo su Vinatis
     html = get_html_with_playwright(f"{base_url}/promozioni")
     if html:
         soup = BeautifulSoup(html, 'html.parser')
@@ -108,6 +149,8 @@ def scrape_vinatis():
 def scrape_callmewine():
     wines = []
     base_url = "https://www.callmewine.com"
+    # NOTA: URL non ancora verificato come per Tannico — se anche qui
+    # risultano 0 card, controllare l'URL reale della pagina promo su Callmewine
     html = get_html_with_playwright(f"{base_url}/promozioni.html")
     if html:
         soup = BeautifulSoup(html, 'html.parser')
@@ -148,8 +191,8 @@ def get_wine_deals():
     if not deals['Tannico']:
         print("⚠️ Tannico vuoto: attivo fallback")
         deals['Tannico'] = [
-            {'title': 'Pinot Nero Alto Adige DOC', 'price': '16,90 €', 'link': 'https://www.tannico.it/sconti.html'},
-            {'title': 'Chianti Classico Riserva', 'price': '14,50 €', 'link': 'https://www.tannico.it/sconti.html'}
+            {'title': 'Pinot Nero Alto Adige DOC', 'price': '16,90 €', 'link': 'https://www.tannico.it/collections/tutte-le-promo'},
+            {'title': 'Chianti Classico Riserva', 'price': '14,50 €', 'link': 'https://www.tannico.it/collections/tutte-le-promo'}
         ]
     if not deals['Vinatis']:
         print("⚠️ Vinatis vuoto: attivo fallback")
