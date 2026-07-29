@@ -1,9 +1,10 @@
+
 name: Aggiorna Selezione Vini
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # Esegue ogni giorno alle 07:00 UTC
-  workflow_dispatch:      # Permette l'esecuzione manuale
+    - cron: '0 7 * * *' # Esegue ogni giorno alle 07:00 UTC
+  workflow_dispatch: # Permette l'esecuzione manuale
 
 permissions:
   contents: write
@@ -11,7 +12,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout codice
         uses: actions/checkout@v3
@@ -27,11 +27,22 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 playwright
-          playwright install chromium
+          playwright install --with-deps chromium
 
       - name: Esegui generazione sito
         run: |
-          python build_site.py
+          python build_site.py 2>&1 | tee scraping_log.txt
+
+      - name: Carica log/HTML di debug
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-scraping
+          path: |
+            scraping_log.txt
+            debug_html/
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Commit e Push delle modifiche
         run: |
@@ -41,4 +52,3 @@ jobs:
           git status
           git commit -m "Aggiornamento automatico vini del giorno" || echo "Nessun cambiamento da committare"
           git push
-
