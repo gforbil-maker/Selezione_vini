@@ -1,5 +1,5 @@
 
- import time
+import time
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -9,80 +9,93 @@ def get_html_with_playwright(url):
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             context = browser.new_context(
-                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                viewport={'width': 1280, 'height': 800}
             )
             page = context.new_page()
             page.goto(url, timeout=30000, wait_until="domcontentloaded")
-            time.sleep(3)
+            time.sleep(4)  # Attesa per il caricamento dei contenuti dinamici/lazy
             html_content = page.content()
             browser.close()
     except Exception as e:
         print(f"Errore durante il caricamento di {url}: {e}")
     return html_content
 
+def fix_link(link, base_url):
+    if not link:
+        return base_url
+    if link.startswith("http"):
+        return link
+    return base_url.rstrip("/") + "/" + link.lstrip("/")
+
 def scrape_tannico():
     wines = []
-    html = get_html_with_playwright("https://www.tannico.it/sconti.html")
+    base_url = "https://www.tannico.it"
+    html = get_html_with_playwright(f"{base_url}/sconti.html")
     if html:
         soup = BeautifulSoup(html, 'html.parser')
-        cards = soup.select('.product-item') or soup.select('.product-card') or soup.select('article')
+        cards = soup.select('.product-item') or soup.select('.product-card') or soup.select('article') or soup.select('.card')
         for card in cards[:6]:
-            title = card.select_one('.product-name, .title, .product-title, h3, h2')
-            price = card.select_one('.price, .special-price, .final-price')
+            title = card.select_one('.product-name, .title, .product-title, h3, h2, .name')
+            price = card.select_one('.price, .special-price, .final-price, .current-price')
             link = card.select_one('a')
             if title and price:
+                raw_link = link['href'] if link and 'href' in link.attrs else "/sconti.html"
                 wines.append({
                     'title': title.get_text(strip=True),
                     'price': price.get_text(strip=True),
-                    'link': link['href'] if link and 'href' in link.attrs else "https://www.tannico.it"
+                    'link': fix_link(raw_link, base_url)
                 })
     return wines
 
 def scrape_vinatis():
     wines = []
-    html = get_html_with_playwright("https://www.vinatis.it/promozioni")
+    base_url = "https://www.vinatis.it"
+    html = get_html_with_playwright(f"{base_url}/promozioni")
     if html:
         soup = BeautifulSoup(html, 'html.parser')
-        cards = soup.select('.product-container') or soup.select('.product_list_item') or soup.select('.prod-card')
+        cards = soup.select('.product-container') or soup.select('.product_list_item') or soup.select('.prod-card') or soup.select('.product-card')
         for card in cards[:6]:
-            title = card.select_one('.product-name, .name, h3')
-            price = card.select_one('.price, .promo-price')
+            title = card.select_one('.product-name, .name, h3, .title')
+            price = card.select_one('.price, .promo-price, .special-price')
             link = card.select_one('a')
             if title and price:
+                raw_link = link['href'] if link and 'href' in link.attrs else "/promozioni"
                 wines.append({
                     'title': title.get_text(strip=True),
                     'price': price.get_text(strip=True),
-                    'link': link['href'] if link and 'href' in link.attrs else "https://www.vinatis.it"
+                    'link': fix_link(raw_link, base_url)
                 })
     return wines
 
 def scrape_callmewine():
     wines = []
-    html = get_html_with_playwright("https://www.callmewine.com/promozioni.html")
+    base_url = "https://www.callmewine.com"
+    html = get_html_with_playwright(f"{base_url}/promozioni.html")
     if html:
         soup = BeautifulSoup(html, 'html.parser')
-        cards = soup.select('.product-item') or soup.select('.item') or soup.select('.product-card')
+        cards = soup.select('.product-item') or soup.select('.item') or soup.select('.product-card') or soup.select('.card-product')
         for card in cards[:6]:
-            title = card.select_one('.product-item-link, .name, h3')
-            price = card.select_one('.price')
+            title = card.select_one('.product-item-link, .name, h3, .product-name')
+            price = card.select_one('.price, .special-price')
             link = card.select_one('a')
             if title and price:
+                raw_link = link['href'] if link and 'href' in link.attrs else "/promozioni.html"
                 wines.append({
                     'title': title.get_text(strip=True),
                     'price': price.get_text(strip=True),
-                    'link': link['href'] if link and 'href' in link.attrs else "https://www.callmewine.com"
+                    'link': fix_link(raw_link, base_url)
                 })
     return wines
 
 def get_wine_deals():
-    # Prova lo scraping reale, e se non trova nulla usa i dati di test
     deals = {
         'Tannico': scrape_tannico(),
         'Vinatis': scrape_vinatis(),
         'Callmewine': scrape_callmewine()
     }
     
-    # Fallback sicuro sui dati di test per garantire sempre il popolamento
+    # Fallback di sicurezza sui dati di test se lo scraping viene bloccato
     if not deals['Tannico']:
         deals['Tannico'] = [
             {'title': 'Pinot Nero Alto Adige DOC', 'price': '16,90 €', 'link': 'https://www.tannico.it/sconti.html'},
