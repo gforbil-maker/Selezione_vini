@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout codice
         uses: actions/checkout@v3
+        with:
+          persist-credentials: true
 
       - name: Configura Python
         uses: actions/setup-python@v4
@@ -27,13 +29,16 @@ jobs:
           pip install requests beautifulsoup4 playwright
           playwright install chromium
 
-      - name: Esegui scraper
-        run: python build_site.py || python scraper.py
+      - name: Esegui generazione sito
+        run: |
+          python build_site.py
 
-      - name: Commit e Push dei cambiamenti
+      - name: Commit e Push delle modifiche
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Aggiornamento automatico vini del giorno" || exit 0
+          git status
+          git commit -m "Aggiornamento automatico vini del giorno" || echo "Nessun cambiamento da committare"
           git push
+
