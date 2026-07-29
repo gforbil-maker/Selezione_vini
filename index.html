@@ -5,22 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selezione Vini del Giorno</title>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8f6f0; color: #2c2c2c; padding: 20px; max-width: 800px; margin: 0 auto; }
-        h1 { text-align: center; color: #722f37; font-size: 1.8rem; margin-bottom: 5px; }
-        .subtitle { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 25px; }
-        .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .section h2 { color: #722f37; border-bottom: 2px solid #f0e6df; padding-bottom: 8px; margin-top: 0; font-size: 1.3rem; }
-        ul { list-style: none; padding: 0; margin: 0; }
-        li { padding: 12px 0; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        body { font-family: Arial, sans-serif; background-color: #f9f8f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        h1 { text-align: center; color: #722F37; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .shop-title { color: #722F37; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 10px 0; border-bottom: 1px solid #f1f1f1; display: flex; justify-content: space-between; align-items: center; }
         li:last-child { border-bottom: none; }
-        a { color: #1a0dab; text-decoration: none; font-weight: 600; flex: 1; }
-        a:hover { text-decoration: underline; }
-        .price { background: #e6f4ea; color: #137333; font-weight: bold; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem; white-space: nowrap; }
+        .wine-info { max-width: 70%; }
+        .wine-title { font-weight: bold; color: #333; display: block; }
+        .wine-price { color: #b22222; font-weight: bold; font-size: 1.1em; }
+        .btn { background-color: #722F37; color: white; padding: 8px 12px; text-decoration: none; border-radius: 5px; font-size: 0.9em; }
+        .btn:hover { background-color: #5a232b; }
     </style>
 </head>
 <body>
-    <h1>🍷 Selezione Vini del Giorno</h1>
-    <p class="subtitle">Aggiornato automaticamente ogni giorno da Tannico, Vinatis e Callmewine</p>
-<div class="section"><h2>Tannico</h2><ul><li><a href="https://www.tannico.it" target="_blank">Visita la sezione promozioni</a><span class="price">Vedi sito</span></li></ul></div><div class="section"><h2>Vinatis</h2><ul><li><a href="https://www.vinatis.it" target="_blank">Visita la sezione promozioni</a><span class="price">Vedi sito</span></li></ul></div><div class="section"><h2>Callmewine</h2><ul><li><a href="https://www.callmewine.it" target="_blank">Visita la sezione promozioni</a><span class="price">Vedi sito</span></li></ul></div>
+    <div class="container">
+        <h1>🍷 Selezione Vini del Giorno</h1>
+        <div class="subtitle">Aggiornato automaticamente ogni giorno da Tannico, Vinatis e Callmewine</div>
+
+        <div class="card">
+            <h2 class="shop-title">Tannico</h2>
+            <ul>
+    
+                <li>
+                    <div class="wine-info">
+                        <span class="wine-title">Pinot Nero Alto Adige DOC</span>
+                        <span class="wine-price">16,90 €</span>
+                    </div>
+                    <a href="https://www.tannico.it/sconti.html" class="btn" target="_blank">Vedi offerta</a>
+                </li>
+            
+                <li>
+                    <div class="wine-info">
+                        <span class="wine-title">Chianti Classico Riserva</span>
+                        <span class="wine-price">14,50 €</span>
+                    </div>
+                    <a href="https://www.tannico.it/sconti.html" class="btn" target="_blank">Vedi offerta</a>
+                </li>
+            
+            </ul>
+        </div>
+    
+        <div class="card">
+            <h2 class="shop-title">Vinatis</h2>
+            <ul>
+    
+                <li>
+                    <div class="wine-info">
+                        <span class="wine-title">Bordeaux Supérieur 2020</span>
+                        <span class="wine-price">11,80 €</span>
+                    </div>
+                    <a href="https://www.vinatis.it/promozioni" class="btn" target="_blank">Vedi offerta</a>
+                </li>
+            
+            </ul>
+        </div>
+    
+        <div class="card">
+            <h2 class="shop-title">Callmewine</h2>
+            <ul>
+    
+                <li>
+                    <div class="wine-info">
+                        <span class="wine-title">Nebbiolo d'Alba 2021</span>
+                        <span class="wine-price">15,20 €</span>
+                    </div>
+                    <a href="https://www.callmewine.com/promozioni.html" class="btn" target="_blank">Vedi offerta</a>
+                </li>
+            
+            </ul>
+        </div>
+    
+    </div>
 </body>
 </html>
