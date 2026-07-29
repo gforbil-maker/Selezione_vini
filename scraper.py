@@ -1,4 +1,3 @@
-
 import time
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
@@ -14,8 +13,8 @@ def get_html_with_playwright(url):
             )
             page = context.new_page()
             print(f"Navigazione verso: {url}")
-            page.goto(url, timeout=35000, wait_until="domcontentloaded")
-            time.sleep(5)
+            page.goto(url, timeout=40000, wait_until="networkidle")
+            time.sleep(3)
             html_content = page.content()
             browser.close()
     except Exception as e:
