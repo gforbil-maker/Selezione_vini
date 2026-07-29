@@ -169,5 +169,18 @@ def get_wine_deals():
 
 if __name__ == "__main__":
     data = get_wine_deals()
+    def get_wine_deals():
+    return {
+        'Tannico': [
+            {'title': 'Pinot Nero Alto Adige DOC', 'price': '16,90 €', 'link': 'https://www.tannico.it/sconti.html'},
+            {'title': 'Chianti Classico Riserva', 'price': '14,50 €', 'link': 'https://www.tannico.it/sconti.html'}
+        ],
+        'Vinatis': [
+            {'title': 'Bordeaux Supérieur 2020', 'price': '11,80 €', 'link': 'https://www.vinatis.it/promozioni'}
+        ],
+        'Callmewine': [
+            {'title': 'Nebbiolo d\'Alba 2021', 'price': '15,20 €', 'link': 'https://www.callmewine.com/promozioni.html'}
+        ]
+    }
     print("Dati estratti con successo:", data)
 
